@@ -5,13 +5,14 @@ import (
 	"time"
 )
 
-func ping(c chan<- string, waitTime int) {
-	time.Sleep(time.Duration(waitTime) * time.Millisecond)
+func ping(c chan<- string) {
+
+	time.Sleep(time.Duration(rand.Intn(100)*10) * time.Millisecond)
 	c <- "ping"
 
 }
-func pong(c chan<- string, waitTime int) {
-	time.Sleep(time.Duration(waitTime) * time.Millisecond)
+func pong(c chan<- string) {
+	time.Sleep(time.Duration(rand.Intn(100)*10) * time.Millisecond)
 	c <- "pong"
 
 }
@@ -21,9 +22,9 @@ func main() {
 	channel := make(chan string)
 
 	for {
-		go ping(channel, rand.Intn(100)*10)
+		go ping(channel)
 		print(<-channel, "\n")
-		go pong(channel, rand.Intn(100)*10)
+		go pong(channel)
 		print(<-channel, "\n")
 
 	}
