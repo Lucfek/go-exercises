@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -23,9 +24,9 @@ func main() {
 
 	for {
 		go ping(channel)
-		print(<-channel, "\n")
+		fmt.Println(<-channel)
 		go pong(channel)
-		print(<-channel, "\n")
+		fmt.Println(<-channel)
 
 	}
 }
