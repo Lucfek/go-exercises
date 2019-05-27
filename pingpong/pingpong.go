@@ -6,29 +6,39 @@ import (
 	"time"
 )
 
-func ping(c chan<- string) {
+func ping(c chan string) {
+	for {
+		select {
+		case msg := <-c:
+			fmt.Println(msg)
 
-	time.Sleep(time.Duration(rand.Intn(100)*10) * time.Millisecond)
-	c <- "ping"
-
+		default:
+			c <- "ping"
+			time.Sleep(time.Duration(rand.Intn(100)*10) * time.Millisecond)
+		}
+	}
 }
-func pong(c chan<- string) {
-	time.Sleep(time.Duration(rand.Intn(100)*10) * time.Millisecond)
-	c <- "pong"
-
+func pong(c chan string) {
+	for {
+		select {
+		case msg := <-c:
+			fmt.Println(msg)
+		default:
+			c <- "pong"
+			time.Sleep(time.Duration(rand.Intn(100)*10) * time.Millisecond)
+		}
+	}
 }
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	channel := make(chan string)
+	c := make(chan string)
+
+	go ping(c)
+	go pong(c)
 
 	for {
-		go ping(channel)
-		fmt.Println(<-channel)
-		go pong(channel)
-		fmt.Println(<-channel)
 
 	}
-}
 
-// :)
+}
