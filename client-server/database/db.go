@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"sync"
 
 	"github.com/gorilla/mux"
 )
@@ -21,10 +21,19 @@ type User struct {
 	Surname string
 	Email   string
 }
+type Mutex chan struct{}
+
+func (m Mutex) Lock() {
+	<-m
+}
+
+func (m Mutex) Unlock() {
+	m <- struct{}{}
+}
 
 //Database structure of the database
 type Database struct {
-	m     sync.RWMutex
+	m     Mutex
 	users map[uint64]User
 }
 
@@ -35,7 +44,7 @@ func (d *Database) Get(id uint64) ([]byte, error) {
 	if _, ok := d.users[id]; ok {
 		return json.Marshal(d.users[id])
 	}
-	return nil, errors.New("There is no user witch matching id")
+	return nil, errors.New("There is no user with matching id")
 
 }
 
@@ -86,7 +95,9 @@ func (d *Database) Save() error {
 
 //New crates new Database
 func New() *Database {
-	return &Database{users: map[uint64]User{}}
+	d := &Database{m: make(Mutex, 1), users: map[uint64]User{}}
+	d.m <- struct{}{}
+	return d
 }
 
 //Load old Database
@@ -103,13 +114,16 @@ func Load() (*Database, error) {
 	}
 	for key, value := range m {
 		lastID = key
-		d = &Database{users: value}
+		d = &Database{m: make(Mutex, 1), users: value}
 	}
+	d.m <- struct{}{}
 	return d, nil
 }
 
 //SetHandler handles POST requests
 func (d *Database) SetHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	user := new(User)
 	user.Name = r.FormValue("name")
 	user.Surname = r.FormValue("surname")
@@ -117,40 +131,44 @@ func (d *Database) SetHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := d.Set(*user)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
 		return
 	}
-	w.Write([]byte("User successfully added"))
+	io.WriteString(w, `{"Status":"Added Succesfully", "UserId":`+strconv.FormatUint(lastID, 10)+`}`)
 }
 
 //GetHandler handles GET requests
 func (d *Database) GetHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	vars := mux.Vars(r)
 	id, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
 		return
 	}
 	user, err := d.Get(id)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
 		return
 	}
-	w.Write(user)
+	io.WriteString(w, string(user))
 }
 
 //DelHandler handles DELETE requests
 func (d *Database) DelHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	vars := mux.Vars(r)
 	id, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
 		return
 	}
 	err = d.Delete(id)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
 		return
 	}
-	w.Write([]byte("User with id- " + vars["id"] + " successfully deleted"))
+	io.WriteString(w, `{"Status":"Deleted User[`+vars["id"]+`] Succesfully"}`)
 }

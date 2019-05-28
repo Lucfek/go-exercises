@@ -1,37 +1,23 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	database "go-exercises/client-server/database"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gorilla/mux"
 )
-
-func askQue(question string) bool {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(question + " (Y/N):")
-
-	switch answear, _, _ := reader.ReadRune(); answear {
-	case 'Y', 'y':
-		return true
-	case 'N', 'n':
-		return false
-	}
-	askQue(question)
-	return false
-}
 
 func saving(db *database.Database, delay int) {
 	for {
 		err := db.Save()
 		if err != nil {
 			log.Println(err)
+		} else {
+			log.Println("Database Saved")
 		}
 		time.Sleep(time.Duration(delay) * time.Minute)
 	}
@@ -40,10 +26,11 @@ func saving(db *database.Database, delay int) {
 func main() {
 	var ip = flag.String("ip", "127.0.0.1:8000", "Ip address the server will run on")
 	var saveDelay = flag.Int("savedelay", 1, "Delay between saves in minuts")
+	var newDb = flag.Bool("new", false, "Set as true if you want to create new database this will overwrite the old one")
 	flag.Parse()
 
 	var db *database.Database
-	if askQue("Do you want to create new database? (This will overwritwe the old one)") {
+	if *newDb {
 		db = database.New()
 	} else {
 		var err error
