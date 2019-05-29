@@ -13,16 +13,64 @@ import (
 	"strings"
 )
 
-func printer(data map[string]interface{}) {
-	fmt.Println("----------")
-	for k, v := range data {
-		fmt.Printf("%s: %v \n", k, v)
-	}
-	fmt.Println("----------")
+type User struct {
+	ID      uint64
+	Name    string
+	Surname string
+	Email   string
 }
 
-func sendRequest(reqType string, addr string, id string) (map[string]interface{}, error) {
-	var data map[string]interface{}
+type response struct {
+	Succ bool
+	Msg  string
+	User User
+}
+
+func printer(data response) {
+	if data.Succ {
+		fmt.Println("----------")
+		fmt.Printf("ID: %v\nName: %v\nSurname: %v\nEmail: %v\n----------\n%v\n",
+			data.User.ID, data.User.Name, data.User.Surname, data.User.Email, data.Msg)
+		fmt.Println("----------")
+	} else {
+		fmt.Println("----------")
+		fmt.Printf("Error: %v\n", data.Msg)
+		fmt.Println("----------")
+	}
+}
+
+func getValues(reader *bufio.Reader) (url.Values, error) {
+	fmt.Print("Name: ")
+	name, err := reader.ReadString('\n')
+	if err != nil {
+		return url.Values{}, err
+	}
+	fmt.Print("Surname: ")
+	surname, err := reader.ReadString('\n')
+	if err != nil {
+		return url.Values{}, err
+	}
+	fmt.Print("Email: ")
+	email, err := reader.ReadString('\n')
+	if err != nil {
+		return url.Values{}, err
+	}
+
+	name = name[:len(name)-1]
+	surname = surname[:len(surname)-1]
+	email = email[:len(email)-1]
+
+	v := url.Values{
+		"name":    {name},
+		"surname": {surname},
+		"email":   {email},
+	}
+
+	return v, nil
+}
+
+func sendRequest(reqType string, addr string, id string) (response, error) {
+	var data response
 	if id == "" {
 		return data, errors.New("No specified Id")
 	}
@@ -40,25 +88,12 @@ func sendRequest(reqType string, addr string, id string) (map[string]interface{}
 	return data, nil
 }
 
-func addUser(reader *bufio.Reader, addr string) (map[string]interface{}, error) {
-	fmt.Print("Name: ")
-	name, _ := reader.ReadString('\n')
-	fmt.Print("Surname: ")
-	surname, _ := reader.ReadString('\n')
-	fmt.Print("Email: ")
-	email, _ := reader.ReadString('\n')
-
-	name = name[:len(name)-1]
-	surname = surname[:len(surname)-1]
-	email = email[:len(email)-1]
-
-	v := url.Values{
-		"name":    {name},
-		"surname": {surname},
-		"email":   {email},
+func addUser(reader *bufio.Reader, addr string) (response, error) {
+	var data response
+	v, err := getValues(reader)
+	if err != nil {
+		return data, err
 	}
-
-	var data map[string]interface{}
 	resp, err := http.PostForm("http://"+addr+"/users/", v)
 	if err != nil {
 		return data, err
@@ -79,7 +114,11 @@ func main() {
 	for {
 		fmt.Print("Command: ")
 
-		b, _, _ := reader.ReadLine()
+		b, _, err := reader.ReadLine()
+		if err != nil {
+			log.Println(err)
+			return
+		}
 		command := string(b)
 		splitet := strings.Split(command, " ")
 

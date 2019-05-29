@@ -1,15 +1,15 @@
-package db
+/*Package db is designed for working witch small databes
+of users stored in a json file*/
+package database
 
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
+	mutex "go-exercises/client-server/mutex"
 	"io/ioutil"
-	"net/http"
-	"strconv"
-
-	"github.com/gorilla/mux"
+	"log"
+	"os"
+	"time"
 )
 
 var lastID uint64 = 1
@@ -21,35 +21,32 @@ type User struct {
 	Surname string
 	Email   string
 }
-type Mutex chan struct{}
-
-func (m Mutex) Lock() {
-	<-m
-}
-
-func (m Mutex) Unlock() {
-	m <- struct{}{}
-}
 
 //Database structure of the database
 type Database struct {
-	m     Mutex
+	m     mutex.Mutex
 	users map[uint64]User
+	file  string
+}
+
+type saveData struct {
+	LastID uint64
+	Users  map[uint64]User
 }
 
 //Get gets the user with the given id
-func (d *Database) Get(id uint64) ([]byte, error) {
+func (d Database) Get(id uint64) (User, error) {
 	d.m.Lock()
 	defer d.m.Unlock()
-	if _, ok := d.users[id]; ok {
-		return json.Marshal(d.users[id])
+	if user, ok := d.users[id]; ok {
+		return user, nil
 	}
-	return nil, errors.New("There is no user with matching id")
+	return User{}, errors.New("There is no user with matching id")
 
 }
 
 //Set adds user to the database
-func (d *Database) Set(user User) error {
+func (d *Database) Set(user User) User {
 	d.m.Lock()
 	defer d.m.Unlock()
 	if len(d.users) == 0 {
@@ -60,115 +57,79 @@ func (d *Database) Set(user User) error {
 	}
 
 	d.users[user.ID] = user
-	if _, ok := d.users[lastID]; ok {
-		return nil
-	}
-	return errors.New("Adding user faild")
+	return user
 }
 
 //Delete deletes the user with the given id
-func (d *Database) Delete(id uint64) error {
+func (d *Database) Delete(id uint64) (User, error) {
 	d.m.Lock()
 	defer d.m.Unlock()
-	if _, ok := d.users[id]; ok {
+	if user, ok := d.users[id]; ok {
 		delete(d.users, id)
-		return nil
+		return user, nil
 	}
 
-	return errors.New("There is no user with matching id")
+	return User{}, errors.New("There is no user with matching id")
 }
 
 //Save saves databases in file "database.json"
-func (d *Database) Save() error {
+func (d Database) Save() error {
 	d.m.Lock()
 	defer d.m.Unlock()
-	m := map[uint64]map[uint64]User{
-		lastID: d.users,
+	sd := saveData{
+		LastID: lastID,
+		Users:  d.users,
 	}
-	fmt.Print()
-	data, err := json.Marshal(m)
+	data, err := json.Marshal(sd)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile("database/database.json", []byte(data), 0777)
+	return ioutil.WriteFile(d.file, []byte(data), 0777)
+}
+
+//Saving saves database witch given delay, it must be run in gorutine
+func (d Database) Saving(delay int) {
+	for {
+		err := d.Save()
+		if err != nil {
+			log.Println(err)
+		} else {
+			log.Println("Database Saved")
+		}
+		time.Sleep(time.Duration(delay) * time.Minute)
+	}
 }
 
 //New crates new Database
-func New() *Database {
-	d := &Database{m: make(Mutex, 1), users: map[uint64]User{}}
-	d.m <- struct{}{}
-	return d
-}
-
-//Load old Database
-func Load() (*Database, error) {
-	data, err := ioutil.ReadFile("database/database.json")
-	if err != nil {
-		return &Database{}, err
+func New(file string) (*Database, error) {
+	if _, err := os.Stat(file); err != nil {
+		if os.IsNotExist(err) {
+			sd := saveData{Users: make(map[uint64]User)}
+			data, err := json.Marshal(sd)
+			if err != nil {
+				return &Database{}, err
+			}
+			ioutil.WriteFile(file, []byte(data), 0777)
+		} else {
+			return &Database{}, err
+		}
 	}
-	var m map[uint64]map[uint64]User
-	var d *Database
-	err = json.Unmarshal(data, &m)
-	if err != nil {
-		return &Database{}, err
-	}
-	for key, value := range m {
-		lastID = key
-		d = &Database{m: make(Mutex, 1), users: value}
-	}
-	d.m <- struct{}{}
+	d := &Database{m: mutex.New(), users: map[uint64]User{}, file: file}
 	return d, nil
 }
 
-//SetHandler handles POST requests
-func (d *Database) SetHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	user := new(User)
-	user.Name = r.FormValue("name")
-	user.Surname = r.FormValue("surname")
-	user.Email = r.FormValue("email")
-
-	err := d.Set(*user)
+//Load old Database
+func (d *Database) Load() error {
+	data, err := ioutil.ReadFile(d.file)
 	if err != nil {
-		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
-		return
+		return err
 	}
-	io.WriteString(w, `{"Status":"Added Succesfully", "UserId":`+strconv.FormatUint(lastID, 10)+`}`)
-}
-
-//GetHandler handles GET requests
-func (d *Database) GetHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	vars := mux.Vars(r)
-	id, err := strconv.ParseUint(vars["id"], 10, 64)
+	sd := saveData{Users: make(map[uint64]User)}
+	err = json.Unmarshal(data, &sd)
 	if err != nil {
-		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
-		return
+		return err
 	}
-	user, err := d.Get(id)
-	if err != nil {
-		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
-		return
-	}
-	io.WriteString(w, string(user))
-}
-
-//DelHandler handles DELETE requests
-func (d *Database) DelHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	vars := mux.Vars(r)
-	id, err := strconv.ParseUint(vars["id"], 10, 64)
-	if err != nil {
-		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
-		return
-	}
-	err = d.Delete(id)
-	if err != nil {
-		io.WriteString(w, `{"Error":"`+err.Error()+`"}`)
-		return
-	}
-	io.WriteString(w, `{"Status":"Deleted User[`+vars["id"]+`] Succesfully"}`)
+	lastID = sd.LastID
+	d.users = sd.Users
+	return nil
 }
