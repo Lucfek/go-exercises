@@ -103,7 +103,7 @@ func (d Database) Saving(delay int) {
 }
 
 //New crates new Database
-func New(file string) (*Database, error) {
+func New(file string, saveDelay int) (*Database, error) {
 	if _, err := os.Stat(file); err != nil {
 		if os.IsNotExist(err) {
 			sd := saveData{Users: make(map[uint64]User)}
@@ -117,6 +117,7 @@ func New(file string) (*Database, error) {
 		}
 	}
 	d := &Database{m: mutex.New(), users: map[uint64]User{}, file: file}
+	go d.Saving(saveDelay)
 	return d, nil
 }
 

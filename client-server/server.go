@@ -19,7 +19,7 @@ func main() {
 	var file = flag.String("file", "database.json", "Name of database file")
 	flag.Parse()
 
-	db, err := database.New(*file)
+	db, err := database.New(*file, *saveDelay)
 	if err != nil {
 		log.Println(err)
 		return
@@ -30,8 +30,6 @@ func main() {
 			return
 		}
 	}
-
-	go db.Saving(*saveDelay)
 
 	handler := handle.New(db)
 
