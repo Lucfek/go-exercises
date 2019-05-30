@@ -5,11 +5,13 @@ package database
 import (
 	"encoding/json"
 	"errors"
-	mutex "go-exercises/client-server/mutex"
+
 	"io/ioutil"
 	"log"
 	"os"
 	"time"
+
+	"github.com/lucfek/go-exercises/client-server/mutex"
 )
 
 var lastID uint64 = 1

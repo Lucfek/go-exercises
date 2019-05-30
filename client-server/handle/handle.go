@@ -2,12 +2,12 @@ package handle
 
 import (
 	"encoding/json"
-	"go-exercises/client-server/database"
 	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/lucfek/go-exercises/client-server/database"
 )
 
 type Storage interface {

@@ -3,13 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go-exercises/client-server/database"
-	"go-exercises/client-server/handle"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/lucfek/go-exercises/client-server/database"
+	"github.com/lucfek/go-exercises/client-server/handle"
 )
 
 func main() {
