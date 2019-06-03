@@ -69,7 +69,7 @@ func (h Handler) handle(fn interface{}, param interface{}, w http.ResponseWriter
 	}
 	if err != nil {
 		res := Response{
-			Status: "Error",
+			Status: "ERROR",
 			Data:   err.Error(),
 		}
 		h.respWriter(w, res)
@@ -100,7 +100,7 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, p httprouter.Params
 	err := decoder.Decode(&todo)
 	if err != nil {
 		res := Response{
-			Status: "Error",
+			Status: "ERROR",
 			Data:   err.Error(),
 		}
 		h.respWriter(w, res)
@@ -123,7 +123,7 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	err := decoder.Decode(&todo)
 	if err != nil {
 		res := Response{
-			Status: "Error",
+			Status: "ERROR",
 			Data:   err.Error(),
 		}
 		h.respWriter(w, res)
