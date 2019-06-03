@@ -22,10 +22,7 @@ func New(srvAddr, dbAddr string) (*Server, error) {
 	if err != nil {
 		return &Server{}, err
 	}
-	handler, err := handler.New(model)
-	if err != nil {
-		return &Server{}, err
-	}
+	handler := handler.New(model)
 	router := httprouter.New()
 	conf := &http.Server{
 		Handler:      router,

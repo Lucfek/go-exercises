@@ -45,7 +45,7 @@ func (m Model) Get(id uint64) (Todo, error) {
 	return todo, err
 }
 func (m Model) GetAll() ([]Todo, error) {
-	rows, err := m.db.Query("SELECT id, name, description, created_at, updated_at FROM todos;")
+	rows, err := m.db.Query("SELECT id, name, description, created_at, updated_at FROM todos ORDER BY id;")
 	if err != nil {
 		return []Todo{}, err
 	}
