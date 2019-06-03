@@ -31,18 +31,14 @@ func (m Model) Close() {
 }
 
 func (m Model) Set(todo Todo) (Todo, error) {
-	sqlStatement := `INSERT INTO todos (name, description) VALUES($1, $2) RETURNING *`
-	returnTodo := Todo{}
+	sqlStatement := `INSERT INTO todos (name, description) VALUES($1, $2) RETURNING id, created_at, updated_at;`
 	err := m.db.QueryRow(sqlStatement, todo.Name, todo.Description).Scan(
-		&returnTodo.Id, &returnTodo.Name, &returnTodo.Description, &returnTodo.CratedAt, &returnTodo.UpdatedAt)
-	if err != nil {
-		return Todo{}, nil
-	}
-	return returnTodo, nil
+		&todo.Id, &todo.CratedAt, &todo.UpdatedAt)
+	return todo, err
 }
 func (m Model) Get(id uint64) (Todo, error) {
 	todo := Todo{}
-	sqlStatement := `SELECT * FROM todos WHERE id=$1`
+	sqlStatement := `SELECT id, name, description, created_at, updated_at FROM todos WHERE id=$1;`
 	row := m.db.QueryRow(sqlStatement, id)
 	err := row.Scan(&todo.Id, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
 	if err != nil {
@@ -56,7 +52,7 @@ func (m Model) Get(id uint64) (Todo, error) {
 	return todo, nil
 }
 func (m Model) GetAll() ([]Todo, error) {
-	rows, err := m.db.Query("SELECT * FROM todos")
+	rows, err := m.db.Query("SELECT id, name, description, created_at, updated_at FROM todos;")
 	if err != nil {
 		return []Todo{}, err
 	}
@@ -71,8 +67,11 @@ func (m Model) GetAll() ([]Todo, error) {
 	}
 	return todos, nil
 }
-func (m Model) Update(id uint64) (Todo, error) {
-	return Todo{}, nil
+func (m Model) Update(id uint64, todo Todo) (Todo, error) {
+	sqlStatement := `UPDATE todos SET name = $1, description = $2, updated_at = now() WHERE id=$3 RETURNING id, created_at, updated_at;`
+	err := m.db.QueryRow(sqlStatement, todo.Name, todo.Description, id).Scan(
+		&todo.Id, &todo.CratedAt, &todo.UpdatedAt)
+	return todo, err
 }
 func (m Model) Delete(id uint64) (Todo, error) {
 	return Todo{}, nil
