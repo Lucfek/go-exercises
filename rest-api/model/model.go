@@ -12,7 +12,7 @@ type Model struct {
 }
 
 type Todo struct {
-	Id          int    `json:"id"`
+	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	CratedAt    string `json:"created_at"`
@@ -34,14 +34,14 @@ func (m Model) Set(todo Todo) (Todo, error) {
 	sqlStatement := `INSERT INTO todos (name, description) VALUES($1, $2) 
 		RETURNING id, created_at, updated_at;`
 	err := m.db.QueryRow(sqlStatement, todo.Name, todo.Description).Scan(
-		&todo.Id, &todo.CratedAt, &todo.UpdatedAt)
+		&todo.ID, &todo.CratedAt, &todo.UpdatedAt)
 	return todo, err
 }
 func (m Model) Get(id uint64) (Todo, error) {
 	todo := Todo{}
 	sqlStatement := `SELECT id, name, description, created_at, updated_at FROM todos WHERE id=$1;`
 	row := m.db.QueryRow(sqlStatement, id)
-	err := row.Scan(&todo.Id, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
+	err := row.Scan(&todo.ID, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
 	return todo, err
 }
 func (m Model) GetAll() ([]Todo, error) {
@@ -52,7 +52,7 @@ func (m Model) GetAll() ([]Todo, error) {
 	var todos []Todo
 	for rows.Next() {
 		todo := Todo{}
-		err = rows.Scan(&todo.Id, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
+		err = rows.Scan(&todo.ID, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
 		if err != nil {
 			return []Todo{}, err
 		}
@@ -67,13 +67,13 @@ func (m Model) Update(id uint64, todo Todo) (Todo, error) {
 	sqlStatement := `UPDATE todos SET name = $1, description = $2, updated_at = now() 
 		WHERE id=$3 RETURNING id, created_at, updated_at;`
 	err := m.db.QueryRow(sqlStatement, todo.Name, todo.Description, id).Scan(
-		&todo.Id, &todo.CratedAt, &todo.UpdatedAt)
+		&todo.ID, &todo.CratedAt, &todo.UpdatedAt)
 	return todo, err
 }
 func (m Model) Delete(id uint64) (Todo, error) {
 	todo := Todo{}
 	sqlStatement := `DELETE FROM todos WHERE id=$1 RETURNING id, name, description, created_at, updated_at;`
 	err := m.db.QueryRow(sqlStatement, id).Scan(
-		&todo.Id, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
+		&todo.ID, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
 	return todo, err
 }
