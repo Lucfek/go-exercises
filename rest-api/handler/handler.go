@@ -95,9 +95,12 @@ func (h Handler) respWriter(w http.ResponseWriter, resp Response) {
 }
 
 func (h Handler) Set(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	var err error
 	todo := model.Todo{}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&todo)
+	err = json.NewDecoder(r.Body).Decode(&todo)
+	if err == nil {
+		todo, err = h.M.Set(todo)
+	}
 	if err != nil {
 		res := Response{
 			Status: "ERROR",
@@ -107,20 +110,17 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		return
 	}
 	h.handle(h.M.Set, todo, w, "SET")
+
 }
 
 func (h Handler) Get(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	h.handle(h.M.Get, p.ByName("id"), w, "GET")
-}
-
-func (h Handler) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	h.handle(h.M.GetAll, "", w, "GETALL")
-}
-
-func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	todo := model.Todo{}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&todo)
+	var err error
+	var id uint64
+	var todo model.Todo
+	id, err = strconv.ParseUint(p.ByName("id"), 10, 64)
+	if err == nil {
+		todo, err = h.M.Get(id)
+	}
 	if err != nil {
 		res := Response{
 			Status: "ERROR",
@@ -129,11 +129,77 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		h.respWriter(w, res)
 		return
 	}
-	h.handle(h.M.Update, updatePack{id: p.ByName("id"), todo: todo}, w, "UPDATE")
+	res := Response{
+		Status: "GET",
+		Data:   todo,
+	}
+	h.respWriter(w, res)
+}
+
+func (h Handler) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	todo, err := h.M.GetAll()
+	if err != nil {
+		res := Response{
+			Status: "ERROR",
+			Data:   err.Error(),
+		}
+		h.respWriter(w, res)
+		return
+	}
+	res := Response{
+		Status: "GETALL",
+		Data:   todo,
+	}
+	h.respWriter(w, res)
+}
+
+func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	var err error
+	var id uint64
+	todo := model.Todo{}
+	err = json.NewDecoder(r.Body).Decode(&todo)
+	if err == nil {
+		id, err = strconv.ParseUint(p.ByName("id"), 10, 64)
+		if err == nil {
+			todo, err = h.M.Update(id, todo)
+		}
+	}
+	if err != nil {
+		res := Response{
+			Status: "ERROR",
+			Data:   err.Error(),
+		}
+		h.respWriter(w, res)
+		return
+	}
+	res := Response{
+		Status: "UPDATE",
+		Data:   todo,
+	}
+	h.respWriter(w, res)
 }
 
 func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	h.handle(h.M.Delete, p.ByName("id"), w, "DELETE")
+	var err error
+	var id uint64
+	var todo model.Todo
+	id, err = strconv.ParseUint(p.ByName("id"), 10, 64)
+	if err == nil {
+		todo, err = h.M.Get(id)
+	}
+	if err != nil {
+		res := Response{
+			Status: "ERROR",
+			Data:   err.Error(),
+		}
+		h.respWriter(w, res)
+		return
+	}
+	res := Response{
+		Status: "DELETE",
+		Data:   todo,
+	}
+	h.respWriter(w, res)
 }
 
 func New(m Model) (*Handler, error) {
