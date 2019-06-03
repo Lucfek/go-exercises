@@ -2,9 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
-	"regexp"
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
@@ -25,61 +23,7 @@ type Response struct {
 }
 
 type Handler struct {
-	M       Model
-	idRegex *regexp.Regexp
-}
-type updatePack struct {
-	id   string
-	todo model.Todo
-}
-
-func (h Handler) handle(fn interface{}, param interface{}, w http.ResponseWriter, msg string) {
-	var todo interface{}
-	var err error
-	var id uint64
-
-	switch f := fn.(type) {
-	case func(id uint64) (model.Todo, error):
-		sID := param.(string)
-		id, err = strconv.ParseUint(sID, 10, 64)
-		if err == nil {
-			todo, err = f(id)
-		}
-	case func() ([]model.Todo, error):
-		todo, err = f()
-	case func(todo model.Todo) (model.Todo, error):
-		toDo, ok := param.(model.Todo)
-		if ok {
-			todo, err = f(toDo)
-		} else {
-			err = errors.New("Internal server error")
-		}
-	case func(id uint64, todo model.Todo) (model.Todo, error):
-		values, ok := param.(updatePack)
-		id, err = strconv.ParseUint(values.id, 10, 64)
-		if ok {
-			if err == nil {
-				todo, err = f(id, values.todo)
-			}
-		} else {
-			err = errors.New("Internal server error")
-		}
-	default:
-		err = errors.New("Internal server error")
-	}
-	if err != nil {
-		res := Response{
-			Status: "ERROR",
-			Data:   err.Error(),
-		}
-		h.respWriter(w, res)
-		return
-	}
-	res := Response{
-		Status: msg,
-		Data:   todo,
-	}
-	h.respWriter(w, res)
+	M Model
 }
 
 func (h Handler) respWriter(w http.ResponseWriter, resp Response) {
@@ -109,7 +53,11 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		h.respWriter(w, res)
 		return
 	}
-	h.handle(h.M.Set, todo, w, "SET")
+	res := Response{
+		Status: "GET",
+		Data:   todo,
+	}
+	h.respWriter(w, res)
 
 }
 
@@ -203,9 +151,5 @@ func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Par
 }
 
 func New(m Model) (*Handler, error) {
-	reg, err := regexp.Compile("^[0-9]+$")
-	if err != nil {
-		return &Handler{}, err
-	}
-	return &Handler{M: m, idRegex: reg}, nil
+	return &Handler{M: m}, nil
 }
