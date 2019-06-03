@@ -31,7 +31,14 @@ func (m Model) Close() {
 }
 
 func (m Model) Set(todo Todo) (Todo, error) {
-	return Todo{Id: 1, Name: todo.Name, Description: todo.Description, CratedAt: "test", UpdatedAt: "test"}, nil
+	sqlStatement := `INSERT INTO todos (name, description) VALUES($1, $2) RETURNING *`
+	returnTodo := Todo{}
+	err := m.db.QueryRow(sqlStatement, todo.Name, todo.Description).Scan(
+		&returnTodo.Id, &returnTodo.Name, &returnTodo.Description, &returnTodo.CratedAt, &returnTodo.UpdatedAt)
+	if err != nil {
+		return Todo{}, nil
+	}
+	return returnTodo, nil
 }
 func (m Model) Get(id uint64) (Todo, error) {
 	todo := Todo{}
