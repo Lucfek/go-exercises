@@ -10,6 +10,7 @@ import (
 	"github.com/lucfek/go-exercises/rest-api/model"
 )
 
+// Server struct
 type Server struct {
 	model   *model.Model
 	Router  *httprouter.Router
@@ -17,6 +18,7 @@ type Server struct {
 	conf    *http.Server
 }
 
+// New takes server address and database address as parameters and returns Server struct
 func New(srvAddr, dbAddr string) (*Server, error) {
 	model, err := model.New(dbAddr)
 	if err != nil {
@@ -33,10 +35,13 @@ func New(srvAddr, dbAddr string) (*Server, error) {
 
 	return &Server{model: model, Handler: handler, Router: router, conf: conf}, nil
 }
+
+// CloseDB ends connection with database
 func (s Server) CloseDB() {
 	s.model.Close()
 }
 
+// Run starts the server
 func (s Server) Run() {
 	log.Fatal(s.conf.ListenAndServe())
 }

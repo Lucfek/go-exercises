@@ -30,7 +30,7 @@ func New(dbAddr string) (*Model, error) {
 	return &Model{db: db}, nil
 }
 
-// Close ends conection with database
+// Close ends connection with database
 func (m Model) Close() {
 	m.db.Close()
 }
