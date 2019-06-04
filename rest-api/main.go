@@ -15,20 +15,13 @@ import (
 	"github.com/lucfek/go-exercises/rest-api/model"
 )
 
-type server struct {
-	model   model.Model
-	router  *httprouter.Router
-	handler handler.Handler
-	httpSrv *http.Server
-}
+var ip, dbAddr string
 
 func init() {
 	flag.StringVar(&ip, "ip", "127.0.0.1:8000", "Ip address the server will run on")
 	flag.StringVar(&dbAddr, "db", "postgres://testuser:testpass@localhost:5555/testdb?sslmode=disable", "Address of database the server will handle")
 	flag.Parse()
 }
-
-var ip, dbAddr string
 
 func main() {
 
@@ -37,12 +30,12 @@ func main() {
 		return
 	}
 	defer db.Close()
-	srv := server{}
-	srv.model = model.New(db)
-	srv.router = httprouter.New()
-	srv.handler = handler.New(srv.model)
-	srv.httpSrv = &http.Server{
-		Handler:      srv.router,
+
+	model := model.New(db)
+	router := httprouter.New()
+	handler := handler.New(model)
+	httpSrv := &http.Server{
+		Handler:      router,
 		Addr:         ip,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -53,12 +46,12 @@ func main() {
 		return
 	}
 
-	srv.router.GET("/api/todos/", srv.handler.GetAll)
-	srv.router.GET("/api/todos/:id", srv.handler.Get)
-	srv.router.POST("/api/todos/", srv.handler.Set)
-	srv.router.PATCH("/api/todos/:id", srv.handler.Update)
-	srv.router.DELETE("/api/todos/:id", srv.handler.Delete)
+	router.GET("/api/todos/", handler.GetAll)
+	router.GET("/api/todos/:id", handler.Get)
+	router.POST("/api/todos/", handler.Set)
+	router.PATCH("/api/todos/:id", handler.Update)
+	router.DELETE("/api/todos/:id", handler.Delete)
 
 	fmt.Printf("Server is running on address: %s \n", ip)
-	log.Fatal(srv.httpSrv.ListenAndServe())
+	log.Fatal(httpSrv.ListenAndServe())
 }

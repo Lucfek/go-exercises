@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -10,22 +11,29 @@ import (
 
 // Delete is responsible for handling "DELETE" Requests
 func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	res := response.Resp{}
 	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
 	if err != nil {
-		res.Status = "ERROR"
-		res.Data = err
+		log.Println(err)
+		res := response.Resp{
+			Status: "error",
+			Data:   "There was an problem, please try again",
+		}
 		response.Writer(w, res)
 		return
 	}
 	todo, err := h.m.Delete(id)
 	if err != nil {
-		res.Status = "ERROR"
-		res.Data = err
+		log.Println(err)
+		res := response.Resp{
+			Status: "error",
+			Data:   "There was an problem, please try again",
+		}
 		response.Writer(w, res)
 		return
 	}
-	res.Status = "SUCCES"
-	res.Data = todo
+	res := response.Resp{
+		Status: "succes",
+		Data:   todo,
+	}
 	response.Writer(w, res)
 }

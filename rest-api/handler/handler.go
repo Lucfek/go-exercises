@@ -10,11 +10,6 @@ type modelInter interface {
 	Delete(id uint64) (model.Todo, error)
 }
 
-type postData struct {
-	Name string
-	Desc string
-}
-
 // Handler is a struct responsible for handling requests
 type Handler struct {
 	m modelInter

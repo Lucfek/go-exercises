@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -9,15 +10,19 @@ import (
 
 // GetAll is responsible for handling "GETALL" Requests
 func (h Handler) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	res := response.Resp{}
 	todos, err := h.m.GetAll()
 	if err != nil {
-		res.Status = "ERROR"
-		res.Data = err
+		log.Println(err)
+		res := response.Resp{
+			Status: "error",
+			Data:   "There was an problem, please try again",
+		}
 		response.Writer(w, res)
 		return
 	}
-	res.Status = "SUCCES"
-	res.Data = todos
+	res := response.Resp{
+		Status: "succes",
+		Data:   todos,
+	}
 	response.Writer(w, res)
 }

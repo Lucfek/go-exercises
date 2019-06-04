@@ -21,11 +21,6 @@ func New(db *sql.DB) Model {
 	return Model{db: db}
 }
 
-// Close ends connection with database
-func (m Model) Close() {
-	m.db.Close()
-}
-
 // Set inserts "todo" into database
 func (m Model) Set(todo Todo) (Todo, error) {
 	sqlStatement := `INSERT INTO todos (name, description) VALUES($1, $2) 
@@ -58,7 +53,7 @@ func (m Model) GetAll() ([]Todo, error) {
 		}
 		todos = append(todos, todo)
 	}
-	return todos, err
+	return todos, rows.Err()
 }
 
 // Update updates row of specified id from database
