@@ -16,11 +16,11 @@ type errLogger interface {
 
 // Handler is a struct responsible for handling requests
 type Handler struct {
-	m      modelInter
-	errLog errLogger
+	m   modelInter
+	log errLogger
 }
 
 // New is a constructor of "Handler", it gets "Model" type Model as an argument and returns "Handler" type Handler
 func New(m modelInter, e errLogger) Handler {
-	return Handler{m: m, errLog: e}
+	return Handler{m: m, log: e}
 }

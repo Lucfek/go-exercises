@@ -14,7 +14,7 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	data := postData{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		h.errLog.Println(err)
+		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
@@ -24,7 +24,7 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 	todo, err := h.m.Set(dbmodel.Todo{Name: data.Name, Description: data.Desc})
 	if err != nil {
-		h.errLog.Println(err)
+		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",

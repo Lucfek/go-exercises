@@ -12,7 +12,7 @@ import (
 func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
 	if err != nil {
-		h.errLog.Println(err)
+		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
@@ -22,7 +22,7 @@ func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	}
 	todo, err := h.m.Delete(id)
 	if err != nil {
-		h.errLog.Println(err)
+		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",

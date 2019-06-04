@@ -15,7 +15,7 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	data := postData{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		h.errLog.Println(err)
+		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
@@ -25,7 +25,7 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	}
 	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
 	if err != nil {
-		h.errLog.Println(err)
+		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
@@ -35,7 +35,7 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	}
 	todo, err := h.m.Update(id, dbmodel.Todo{Name: data.Name, Description: data.Desc})
 	if err != nil {
-		h.errLog.Println(err)
+		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
