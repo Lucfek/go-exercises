@@ -1,22 +1,20 @@
-package handler
+package dbhandler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/lucfek/go-exercises/rest-api/model"
+	"github.com/lucfek/go-exercises/rest-api/dbmodel"
 	"github.com/lucfek/go-exercises/rest-api/response"
 )
 
-// Update is responsible for handling "UPDATE" Requests
-func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+// Set is responsible for handling "SET" Requests
+func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data := postData{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		log.Println(err)
+		h.errLog.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
@@ -24,9 +22,9 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
-	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
+	todo, err := h.m.Set(dbmodel.Todo{Name: data.Name, Description: data.Desc})
 	if err != nil {
-		log.Println(err)
+		h.errLog.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
@@ -34,19 +32,11 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
-	todo, err := h.m.Update(id, model.Todo{Name: data.Name, Description: data.Desc})
-	if err != nil {
-		log.Println(err)
-		res := response.Resp{
-			Status: "error",
-			Data:   "There was an problem, please try again",
-		}
-		response.Writer(w, res)
-		return
-	}
+
 	res := response.Resp{
 		Status: "succes",
 		Data:   todo,
 	}
 	response.Writer(w, res)
+
 }

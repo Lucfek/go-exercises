@@ -1,7 +1,6 @@
-package handler
+package dbhandler
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -12,7 +11,7 @@ import (
 func (h Handler) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	todos, err := h.m.GetAll()
 	if err != nil {
-		log.Println(err)
+		h.errLog.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",

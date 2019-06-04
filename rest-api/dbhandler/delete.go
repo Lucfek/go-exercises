@@ -1,21 +1,18 @@
-package handler
+package dbhandler
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/lucfek/go-exercises/rest-api/model"
 	"github.com/lucfek/go-exercises/rest-api/response"
 )
 
-// Set is responsible for handling "SET" Requests
-func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	data := postData{}
-	err := json.NewDecoder(r.Body).Decode(&data)
+// Delete is responsible for handling "DELETE" Requests
+func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
 	if err != nil {
-		log.Println(err)
+		h.errLog.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
@@ -23,9 +20,9 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		response.Writer(w, res)
 		return
 	}
-	todo, err := h.m.Set(model.Todo{Name: data.Name, Description: data.Desc})
+	todo, err := h.m.Delete(id)
 	if err != nil {
-		log.Println(err)
+		h.errLog.Println(err)
 		res := response.Resp{
 			Status: "error",
 			Data:   "There was an problem, please try again",
@@ -33,11 +30,9 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		response.Writer(w, res)
 		return
 	}
-
 	res := response.Resp{
 		Status: "succes",
 		Data:   todo,
 	}
 	response.Writer(w, res)
-
 }
