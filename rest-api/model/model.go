@@ -9,11 +9,11 @@ type Model struct {
 
 // Todo is a structure of database info
 type Todo struct {
-	ID          int
-	Name        string
-	Description string
-	CratedAt    string
-	UpdatedAt   string
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	CratedAt    string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
 }
 
 // New gets address of databas as parameter  od returns new Model struct
