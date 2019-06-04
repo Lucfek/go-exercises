@@ -157,6 +157,6 @@ func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Par
 }
 
 // New is a constructor of "Handler", it gets "Model" type Model as an argument and returns "Handler" type Handler
-func New(m modelInter) *Handler {
-	return &Handler{m: m}
+func New(m modelInter) Handler {
+	return Handler{m: m}
 }
