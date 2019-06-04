@@ -1,9 +1,6 @@
 package model
 
-import (
-	"database/sql"
-	"errors"
-)
+import "database/sql"
 
 // Model struct
 type Model struct {
@@ -12,11 +9,11 @@ type Model struct {
 
 // Todo is a structure of database info
 type Todo struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	CratedAt    string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
+	ID          int
+	Name        string
+	Description string
+	CratedAt    string
+	UpdatedAt   string
 }
 
 // New gets address of databas as parameter  od returns new Model struct
@@ -42,8 +39,7 @@ func (m Model) Set(todo Todo) (Todo, error) {
 func (m Model) Get(id uint64) (Todo, error) {
 	todo := Todo{}
 	sqlStatement := `SELECT id, name, description, created_at, updated_at FROM todos WHERE id=$1`
-	row := m.db.QueryRow(sqlStatement, id)
-	err := row.Scan(&todo.ID, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
+	err := m.db.QueryRow(sqlStatement, id).Scan(&todo.ID, &todo.Name, &todo.Description, &todo.CratedAt, &todo.UpdatedAt)
 	return todo, err
 }
 
@@ -61,9 +57,6 @@ func (m Model) GetAll() ([]Todo, error) {
 			return []Todo{}, err
 		}
 		todos = append(todos, todo)
-	}
-	if len(todos) == 0 {
-		err = errors.New("sql: database empty")
 	}
 	return todos, err
 }
