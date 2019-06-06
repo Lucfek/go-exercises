@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -51,6 +53,32 @@ func main() {
 	router.PATCH("/api/todos/:id/", handler.Update)
 	router.DELETE("/api/todos/:id/", handler.Delete)
 
+	done := make(chan struct{}, 1)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	go func() {
+		<-quit
+		fmt.Println("Shutting down...")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		httpSrv.SetKeepAlivesEnabled(false)
+		if err := httpSrv.Shutdown(ctx); err != nil {
+			errLog.Fatalf("Could not gracefully shutdown the server: %v\n", err)
+		}
+		close(done)
+
+	}()
+
 	fmt.Printf("Server is running on address: %s \n", ipAddr)
-	log.Fatal(httpSrv.ListenAndServe())
+	err = httpSrv.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		errLog.Println(err)
+	}
+
+	<-done
+	fmt.Println("Server closed")
+
 }
