@@ -26,6 +26,7 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
 
 	db, err := sql.Open("postgres", dbAddr)
 	if err != nil {
@@ -38,7 +39,7 @@ func main() {
 	errLog := log.New(os.Stderr,
 		"ERROR: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
-	flag.Parse()
+
 	handler := dbhandler.New(model, errLog)
 	httpSrv := &http.Server{
 		Handler:      router,

@@ -1,6 +1,7 @@
 package dbhandler
 
 import "github.com/lucfek/go-exercises/rest-api/dbmodel"
+import "log"
 
 type modelInter interface {
 	Set(todo dbmodel.Todo) (dbmodel.Todo, error)
@@ -10,17 +11,13 @@ type modelInter interface {
 	Delete(id uint64) (dbmodel.Todo, error)
 }
 
-type errLogger interface {
-	Println(v ...interface{})
-}
-
 // Handler is a struct responsible for handling requests
 type Handler struct {
 	m   modelInter
-	log errLogger
+	log *log.Logger
 }
 
 // New is a constructor of "Handler", it gets "Model" type Model as an argument and returns "Handler" type Handler
-func New(m modelInter, e errLogger) Handler {
+func New(m modelInter, e *log.Logger) Handler {
 	return Handler{m: m, log: e}
 }
