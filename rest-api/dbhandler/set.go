@@ -22,6 +22,14 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		response.Writer(w, res)
 		return
 	}
+	if data.Name == "" || data.Desc == "" {
+		res := response.Resp{
+			Status: "error",
+			Data:   "Empty post values",
+		}
+		response.Writer(w, res)
+		return
+	}
 	todo, err := h.m.Set(dbmodel.Todo{Name: data.Name, Description: data.Desc})
 	if err != nil {
 		h.log.Println(err)

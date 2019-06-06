@@ -23,6 +23,14 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
+	if data.Name == "" || data.Desc == "" {
+		res := response.Resp{
+			Status: "error",
+			Data:   "Empty post values",
+		}
+		response.Writer(w, res)
+		return
+	}
 	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
 	if err != nil {
 		h.log.Println(err)
