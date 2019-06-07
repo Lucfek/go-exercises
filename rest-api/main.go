@@ -23,10 +23,10 @@ var ipAddr, dbAddr string
 func init() {
 	flag.StringVar(&ipAddr, "ip", "127.0.0.1:8000", "Ip address the server will run on")
 	flag.StringVar(&dbAddr, "db", "postgres://testuser:testpass@localhost:5555/testdb?sslmode=disable", "Address of database the server will handle")
+	flag.Parse()
 }
 
 func main() {
-	flag.Parse()
 
 	db, err := sql.Open("postgres", dbAddr)
 	if err != nil {
