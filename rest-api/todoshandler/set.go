@@ -1,12 +1,12 @@
-package dbhandler
+package todoshandler
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/lucfek/go-exercises/rest-api/dbmodel"
 	"github.com/lucfek/go-exercises/rest-api/response"
+	"github.com/lucfek/go-exercises/rest-api/todosmodel"
 )
 
 // Set is responsible for handling "SET" Requests
@@ -30,7 +30,7 @@ func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		response.Writer(w, res)
 		return
 	}
-	todo, err := h.m.Set(dbmodel.Todo{Name: data.Name, Description: data.Desc})
+	todo, err := h.m.Set(todosmodel.Todo{Name: data.Name, Description: data.Desc})
 	if err != nil {
 		h.log.Println(err)
 		res := response.Resp{

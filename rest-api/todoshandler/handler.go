@@ -1,14 +1,17 @@
-package dbhandler
+package todoshandler
 
-import "github.com/lucfek/go-exercises/rest-api/dbmodel"
-import "log"
+import (
+	"log"
+
+	"github.com/lucfek/go-exercises/rest-api/todosmodel"
+)
 
 type modelInter interface {
-	Set(todo dbmodel.Todo) (dbmodel.Todo, error)
-	Get(id uint64) (dbmodel.Todo, error)
-	GetAll() ([]dbmodel.Todo, error)
-	Update(id uint64, todo dbmodel.Todo) (dbmodel.Todo, error)
-	Delete(id uint64) (dbmodel.Todo, error)
+	Set(todo todosmodel.Todo) (todosmodel.Todo, error)
+	Get(id uint64) (todosmodel.Todo, error)
+	GetAll() ([]todosmodel.Todo, error)
+	Update(id uint64, todo todosmodel.Todo) (todosmodel.Todo, error)
+	Delete(id uint64) (todosmodel.Todo, error)
 }
 
 // Handler is a struct responsible for handling requests

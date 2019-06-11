@@ -1,4 +1,4 @@
-package dbhandler
+package todoshandler
 
 import (
 	"encoding/json"
@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/lucfek/go-exercises/rest-api/dbmodel"
 	"github.com/lucfek/go-exercises/rest-api/response"
+	"github.com/lucfek/go-exercises/rest-api/todosmodel"
 )
 
 // Update is responsible for handling "UPDATE" Requests
@@ -41,7 +41,7 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
-	todo, err := h.m.Update(id, dbmodel.Todo{Name: data.Name, Description: data.Desc})
+	todo, err := h.m.Update(id, todosmodel.Todo{Name: data.Name, Description: data.Desc})
 	if err != nil {
 		h.log.Println(err)
 		res := response.Resp{

@@ -1,4 +1,4 @@
-package dbmodel
+package todosmodel
 
 import "database/sql"
 

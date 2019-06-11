@@ -12,10 +12,12 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/lucfek/go-exercises/rest-api/todoshandler"
+	"github.com/lucfek/go-exercises/rest-api/todosmodel"
+	"github.com/lucfek/go-exercises/rest-api/usershandler"
+	"github.com/lucfek/go-exercises/rest-api/usersmodel"
 
 	_ "github.com/lib/pq" //Database driver
-	"github.com/lucfek/go-exercises/rest-api/dbhandler"
-	"github.com/lucfek/go-exercises/rest-api/dbmodel"
 )
 
 var ipAddr, dbAddr string
@@ -34,13 +36,15 @@ func main() {
 	}
 	defer db.Close()
 
-	model := dbmodel.New(db)
+	todosModel := todosmodel.New(db)
+	usersModel := usersmodel.New(db)
 	router := httprouter.New()
 	errLog := log.New(os.Stderr,
 		"ERROR: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
 
-	handler := dbhandler.New(model, errLog)
+	todosHandler := todoshandler.New(todosModel, errLog)
+	usersHandler := usershandler.New(usersModel, errLog)
 	httpSrv := &http.Server{
 		Handler:      router,
 		Addr:         ipAddr,
@@ -48,11 +52,14 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	router.GET("/api/todos/", handler.GetAll)
-	router.GET("/api/todos/:id/", handler.Get)
-	router.POST("/api/todos/", handler.Set)
-	router.PATCH("/api/todos/:id/", handler.Update)
-	router.DELETE("/api/todos/:id/", handler.Delete)
+	router.GET("/api/todos/", todosHandler.GetAll)
+	router.GET("/api/todos/:id/", todosHandler.Get)
+	router.POST("/api/todos/", todosHandler.Set)
+	router.PATCH("/api/todos/:id/", todosHandler.Update)
+	router.DELETE("/api/todos/:id/", todosHandler.Delete)
+
+	router.POST("/api/users/register", usersHandler.Register)
+	router.POST("/api/users/login", usersHandler.Login)
 
 	done := make(chan struct{}, 1)
 	quit := make(chan os.Signal, 1)

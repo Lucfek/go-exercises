@@ -1,4 +1,4 @@
-package dbhandler
+package todoshandler
 
 import (
 	"net/http"
@@ -8,8 +8,8 @@ import (
 	"github.com/lucfek/go-exercises/rest-api/response"
 )
 
-// Delete is responsible for handling "DELETE" Requests
-func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+// Get is responsible for handling "GET" Requests
+func (h Handler) Get(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
 	if err != nil {
 		h.log.Println(err)
@@ -20,7 +20,7 @@ func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
-	todo, err := h.m.Delete(id)
+	todo, err := h.m.Get(id)
 	if err != nil {
 		h.log.Println(err)
 		res := response.Resp{
@@ -35,4 +35,5 @@ func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		Data:   todo,
 	}
 	response.Writer(w, res)
+
 }

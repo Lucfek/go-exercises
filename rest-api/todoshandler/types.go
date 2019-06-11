@@ -1,4 +1,4 @@
-package dbhandler
+package todoshandler
 
 type postData struct {
 	Name string `json:"name"`
