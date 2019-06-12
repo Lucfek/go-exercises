@@ -1,17 +1,14 @@
-package todoshandler
+package users
 
 import (
 	"log"
 
-	"github.com/lucfek/go-exercises/rest-api/todosmodel"
+	"github.com/lucfek/go-exercises/rest-api/model"
 )
 
 type modelInter interface {
-	Set(todo todosmodel.Todo) (todosmodel.Todo, error)
-	Get(id uint64) (todosmodel.Todo, error)
-	GetAll() ([]todosmodel.Todo, error)
-	Update(id uint64, todo todosmodel.Todo) (todosmodel.Todo, error)
-	Delete(id uint64) (todosmodel.Todo, error)
+	Login(user model.User) (model.User, error)
+	Register(user model.User) (model.User, error)
 }
 
 // Handler is a struct responsible for handling requests

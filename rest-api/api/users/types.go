@@ -1,4 +1,4 @@
-package usershandler
+package users
 
 type userData struct {
 	Email    string `json:"email"`

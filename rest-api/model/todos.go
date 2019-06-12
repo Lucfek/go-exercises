@@ -1,11 +1,4 @@
-package todosmodel
-
-import "database/sql"
-
-// Model struct
-type Model struct {
-	db *sql.DB
-}
+package model
 
 // Todo is a structure of database info
 type Todo struct {
@@ -14,11 +7,6 @@ type Todo struct {
 	Description string `json:"description"`
 	CratedAt    string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
-}
-
-// New gets address of databas as parameter  od returns new Model struct
-func New(db *sql.DB) Model {
-	return Model{db: db}
 }
 
 // Set inserts "todo" into database

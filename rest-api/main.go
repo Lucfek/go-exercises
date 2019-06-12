@@ -12,10 +12,9 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/lucfek/go-exercises/rest-api/todoshandler"
-	"github.com/lucfek/go-exercises/rest-api/todosmodel"
-	"github.com/lucfek/go-exercises/rest-api/usershandler"
-	"github.com/lucfek/go-exercises/rest-api/usersmodel"
+	"github.com/lucfek/go-exercises/rest-api/api/todos"
+	"github.com/lucfek/go-exercises/rest-api/api/users"
+	"github.com/lucfek/go-exercises/rest-api/model"
 
 	_ "github.com/lib/pq" //Database driver
 )
@@ -36,31 +35,31 @@ func main() {
 	}
 	defer db.Close()
 
-	todosModel := todosmodel.New(db)
-	usersModel := usersmodel.New(db)
+	model := model.New(db)
+
 	router := httprouter.New()
 	errLog := log.New(os.Stderr,
 		"ERROR: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
 
-	todosHandler := todoshandler.New(todosModel, errLog)
-	usersHandler := usershandler.New(usersModel, errLog)
+	todosApi := todos.New(model, errLog)
+	usersApi := users.New(model, errLog)
+
+	router.GET("/api/todos/", todosApi.GetAll)
+	router.GET("/api/todos/:id/", todosApi.Get)
+	router.POST("/api/todos/", todosApi.Set)
+	router.PATCH("/api/todos/:id/", todosApi.Update)
+	router.DELETE("/api/todos/:id/", todosApi.Delete)
+
+	router.POST("/api/users/register", usersApi.Register)
+	router.POST("/api/users/login", usersApi.Login)
+
 	httpSrv := &http.Server{
 		Handler:      router,
 		Addr:         ipAddr,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-
-	router.GET("/api/todos/", todosHandler.GetAll)
-	router.GET("/api/todos/:id/", todosHandler.Get)
-	router.POST("/api/todos/", todosHandler.Set)
-	router.PATCH("/api/todos/:id/", todosHandler.Update)
-	router.DELETE("/api/todos/:id/", todosHandler.Delete)
-
-	router.POST("/api/users/register", usersHandler.Register)
-	router.POST("/api/users/login", usersHandler.Login)
-
 	done := make(chan struct{}, 1)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

@@ -1,22 +1,17 @@
-package usershandler
+package users
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+
+	"github.com/lucfek/go-exercises/rest-api/model"
 	"github.com/lucfek/go-exercises/rest-api/response"
-	"golang.org/x/crypto/bcrypt"
 )
 
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-// Login logs in a user
-func (h Handler) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// Register registers a user
+func (h Handler) Register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data := userData{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
@@ -29,16 +24,26 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		return
 	}
 
-	user, err := h.m.Get(data.Email)
-	if err == sql.ErrNoRows {
-		h.log.Println(err)
+	if data.Email == "" || data.Password == "" {
 		res := response.Resp{
 			Status: "error",
-			Data:   "There is no user with such email",
+			Data:   "Empty values",
 		}
 		response.Writer(w, res)
 		return
-	} else if err != nil {
+	}
+
+	user, err := h.m.Register(model.User{Email: data.Email, Password: data.Password})
+	if err, ok := err.(model.UserError); ok {
+		h.log.Println(err)
+		res := response.Resp{
+			Status: "error",
+			Data:   err.Msg,
+		}
+		response.Writer(w, res)
+		return
+	}
+	if err != nil {
 		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
@@ -47,19 +52,9 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		response.Writer(w, res)
 		return
 	}
-
-	if !checkPasswordHash(data.Password, user.Password) {
-		res := response.Resp{
-			Status: "error",
-			Data:   "Wrong login data",
-		}
-		response.Writer(w, res)
-		return
-	}
-
 	res := response.Resp{
 		Status: "succes",
-		Data:   true,
+		Data:   user,
 	}
 	response.Writer(w, res)
 }

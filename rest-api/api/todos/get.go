@@ -1,4 +1,4 @@
-package todoshandler
+package todos
 
 import (
 	"net/http"

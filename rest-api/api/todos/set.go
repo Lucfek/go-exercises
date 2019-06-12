@@ -1,16 +1,18 @@
-package todoshandler
+package todos
 
 import (
+	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/lucfek/go-exercises/rest-api/model"
 	"github.com/lucfek/go-exercises/rest-api/response"
 )
 
-// Delete is responsible for handling "DELETE" Requests
-func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
+// Set is responsible for handling "SET" Requests
+func (h Handler) Set(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	data := postData{}
+	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		h.log.Println(err)
 		res := response.Resp{
@@ -20,7 +22,15 @@ func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
-	todo, err := h.m.Delete(id)
+	if data.Name == "" || data.Desc == "" {
+		res := response.Resp{
+			Status: "error",
+			Data:   "Empty post values",
+		}
+		response.Writer(w, res)
+		return
+	}
+	todo, err := h.m.Set(model.Todo{Name: data.Name, Description: data.Desc})
 	if err != nil {
 		h.log.Println(err)
 		res := response.Resp{
@@ -30,9 +40,11 @@ func (h Handler) Delete(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
+
 	res := response.Resp{
 		Status: "succes",
 		Data:   todo,
 	}
 	response.Writer(w, res)
+
 }

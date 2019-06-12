@@ -1,18 +1,17 @@
-package todoshandler
+package users
 
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/lucfek/go-exercises/rest-api/model"
 	"github.com/lucfek/go-exercises/rest-api/response"
-	"github.com/lucfek/go-exercises/rest-api/todosmodel"
 )
 
-// Update is responsible for handling "UPDATE" Requests
-func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	data := postData{}
+// Login logs in a user
+func (h Handler) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	data := userData{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		h.log.Println(err)
@@ -23,15 +22,26 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
-	if data.Name == "" || data.Desc == "" {
+
+	if data.Email == "" || data.Password == "" {
 		res := response.Resp{
 			Status: "error",
-			Data:   "Empty post values",
+			Data:   "Empty values",
 		}
 		response.Writer(w, res)
 		return
 	}
-	id, err := strconv.ParseUint(p.ByName("id"), 10, 64)
+
+	_, err = h.m.Login(model.User{Email: data.Email, Password: data.Password})
+	if err, ok := err.(model.UserError); ok {
+		h.log.Println(err)
+		res := response.Resp{
+			Status: "error",
+			Data:   err.Msg,
+		}
+		response.Writer(w, res)
+		return
+	}
 	if err != nil {
 		h.log.Println(err)
 		res := response.Resp{
@@ -41,19 +51,10 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		response.Writer(w, res)
 		return
 	}
-	todo, err := h.m.Update(id, todosmodel.Todo{Name: data.Name, Description: data.Desc})
-	if err != nil {
-		h.log.Println(err)
-		res := response.Resp{
-			Status: "error",
-			Data:   "There was an problem, please try again",
-		}
-		response.Writer(w, res)
-		return
-	}
+
 	res := response.Resp{
 		Status: "succes",
-		Data:   todo,
+		Data:   true,
 	}
 	response.Writer(w, res)
 }

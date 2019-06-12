@@ -1,4 +1,4 @@
-package todoshandler
+package todos
 
 type postData struct {
 	Name string `json:"name"`
