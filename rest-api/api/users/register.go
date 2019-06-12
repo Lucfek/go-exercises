@@ -34,18 +34,19 @@ func (h Handler) Register(w http.ResponseWriter, r *http.Request, _ httprouter.P
 	}
 
 	err = h.m.Register(model.User{Email: data.Email, Password: data.Password})
-	var msg string
-	switch err {
-	case model.ErrInvalidEmail:
-		msg = "Invalid eamil"
-	case model.ErrInvalidPass:
-		msg = "Invalid password"
-	case model.ErrUserAlreadyExist:
-		msg = "User already exist"
-	default:
-		msg = "There was an problem, please try again"
-	}
+
 	if err != nil {
+		var msg string
+		switch err {
+		case model.ErrInvalidEmail:
+			msg = "Invalid eamil"
+		case model.ErrInvalidPass:
+			msg = "Invalid password"
+		case model.ErrUserAlreadyExist:
+			msg = "User already exist"
+		default:
+			msg = "There was an problem, please try again"
+		}
 		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
