@@ -14,7 +14,7 @@ type User struct {
 	CreatedAt string
 }
 
-// Add adds user to database
+// Login log in user
 func (m Model) Login(user User) (User, error) {
 	var hash string
 	sqlStatement := `SELECT id, email, password, created_at FROM users WHERE email=$1`
@@ -24,14 +24,14 @@ func (m Model) Login(user User) (User, error) {
 		return User{}, UserError{Code: 104, Msg: "User don't exist"}
 	}
 
-	if !checkPasswordHash(user.Password, hash) {
+	if err = checkPasswordHash(user.Password, hash); err != nil {
 		return User{}, UserError{Code: 105, Msg: "Incorrect password"}
 	}
 	user.Password = ""
 	return user, err
 }
 
-// Get gets user from database by email
+// Register  adds user to database
 func (m Model) Register(user User) (User, error) {
 	if !isValidPass(user.Password) {
 		return User{}, UserError{Code: 100, Msg: "Invalid password"}
