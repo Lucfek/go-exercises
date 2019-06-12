@@ -7,8 +7,8 @@ import (
 )
 
 type modelInter interface {
-	Login(user model.User) (model.User, error)
-	Register(user model.User) (model.User, error)
+	Login(user model.User) error
+	Register(user model.User) error
 }
 
 // Handler is a struct responsible for handling requests

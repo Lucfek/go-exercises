@@ -33,28 +33,30 @@ func (h Handler) Register(w http.ResponseWriter, r *http.Request, _ httprouter.P
 		return
 	}
 
-	user, err := h.m.Register(model.User{Email: data.Email, Password: data.Password})
-	if err, ok := err.(model.UserError); ok {
-		h.log.Println(err)
-		res := response.Resp{
-			Status: "error",
-			Data:   err.Msg,
-		}
-		response.Writer(w, res)
-		return
+	err = h.m.Register(model.User{Email: data.Email, Password: data.Password})
+	var msg string
+	switch err {
+	case model.ErrInvalidEmail:
+		msg = "Invalid eamil"
+	case model.ErrInvalidPass:
+		msg = "Invalid password"
+	case model.ErrUserAlreadyExist:
+		msg = "User already exist"
+	default:
+		msg = "There was an problem, please try again"
 	}
 	if err != nil {
 		h.log.Println(err)
 		res := response.Resp{
 			Status: "error",
-			Data:   "There was an problem, please try again",
+			Data:   msg,
 		}
 		response.Writer(w, res)
 		return
 	}
 	res := response.Resp{
 		Status: "succes",
-		Data:   user,
+		Data:   true,
 	}
 	response.Writer(w, res)
 }

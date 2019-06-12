@@ -35,24 +35,25 @@ func main() {
 	}
 	defer db.Close()
 
-	model := model.New(db)
+	usersModel := model.Users{db}
+	todosModel := model.Todos{db}
 
 	router := httprouter.New()
 	errLog := log.New(os.Stderr,
 		"ERROR: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
 
-	todosApi := todos.New(model, errLog)
-	usersApi := users.New(model, errLog)
+	todosAPI := todos.New(todosModel, errLog)
+	usersAPI := users.New(usersModel, errLog)
 
-	router.GET("/api/todos/", todosApi.GetAll)
-	router.GET("/api/todos/:id/", todosApi.Get)
-	router.POST("/api/todos/", todosApi.Set)
-	router.PATCH("/api/todos/:id/", todosApi.Update)
-	router.DELETE("/api/todos/:id/", todosApi.Delete)
+	router.GET("/api/todos/", todosAPI.GetAll)
+	router.GET("/api/todos/:id/", todosAPI.Get)
+	router.POST("/api/todos/", todosAPI.Set)
+	router.PATCH("/api/todos/:id/", todosAPI.Update)
+	router.DELETE("/api/todos/:id/", todosAPI.Delete)
 
-	router.POST("/api/users/register", usersApi.Register)
-	router.POST("/api/users/login", usersApi.Login)
+	router.POST("/api/users/register", usersAPI.Register)
+	router.POST("/api/users/login", usersAPI.Login)
 
 	httpSrv := &http.Server{
 		Handler:      router,

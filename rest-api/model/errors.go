@@ -1,12 +1,9 @@
 package model
 
-import "fmt"
+import "errors"
 
-type UserError struct {
-	Code int
-	Msg  string
-}
-
-func (e UserError) Error() string {
-	return fmt.Sprintf("%s, code: %d", e.Msg, e.Code)
-}
+var ErrUserNotFound = errors.New("User not found")
+var ErrUserAlreadyExist = errors.New("User already exist")
+var ErrIncorrectPass = errors.New("Incorrect password")
+var ErrInvalidPass = errors.New("Invalid password")
+var ErrInvalidEmail = errors.New("Invalid Email")
