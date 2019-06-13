@@ -67,7 +67,7 @@ func main() {
 
 	go func() {
 		<-quit
-		fmt.Println("Shutting down...")
+		log.Println("Shutting down...")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -87,6 +87,6 @@ func main() {
 	}
 
 	<-done
-	fmt.Println("Server closed")
+	log.Println("Server closed")
 
 }

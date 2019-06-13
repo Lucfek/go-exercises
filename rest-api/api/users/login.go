@@ -35,6 +35,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	err = h.m.Login(model.User{Email: data.Email, Password: data.Password})
 
 	if err != nil {
+
 		var msg string
 		switch err {
 		case model.ErrIncorrectPass:

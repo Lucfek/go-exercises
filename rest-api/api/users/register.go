@@ -36,6 +36,7 @@ func (h Handler) Register(w http.ResponseWriter, r *http.Request, _ httprouter.P
 	err = h.m.Register(model.User{Email: data.Email, Password: data.Password})
 
 	if err != nil {
+
 		var msg string
 		switch err {
 		case model.ErrInvalidEmail:
