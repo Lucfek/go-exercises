@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/lucfek/go-exercises/rest-api/api/auth"
 	"github.com/lucfek/go-exercises/rest-api/api/todos"
 	"github.com/lucfek/go-exercises/rest-api/api/users"
 	"github.com/lucfek/go-exercises/rest-api/model"
@@ -46,7 +47,7 @@ func main() {
 	todosAPI := todos.New(todosModel, errLog)
 	usersAPI := users.New(usersModel, errLog)
 
-	router.GET("/api/todos/", todosAPI.GetAll)
+	router.GET("/api/todos/", auth.JwtVerify(todosAPI.GetAll))
 	router.GET("/api/todos/:id/", todosAPI.Get)
 	router.POST("/api/todos/", todosAPI.Set)
 	router.PATCH("/api/todos/:id/", todosAPI.Update)

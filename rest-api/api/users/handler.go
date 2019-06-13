@@ -7,7 +7,7 @@ import (
 )
 
 type modelInter interface {
-	Login(user model.User) error
+	Login(user model.User) (string, error)
 	Register(user model.User) error
 }
 
