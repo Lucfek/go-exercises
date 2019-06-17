@@ -2,8 +2,8 @@ package model
 
 import "errors"
 
-var ErrUserNotFound = errors.New("User not found")
-var ErrUserAlreadyExist = errors.New("User already exist")
-var ErrIncorrectPass = errors.New("Incorrect password")
-var ErrInvalidPass = errors.New("Invalid password")
-var ErrInvalidEmail = errors.New("Invalid Email")
+var ErrUserNotFound = errors.New("user not found")
+var ErrUserAlreadyExist = errors.New("user already exist")
+var ErrIncorrectPass = errors.New("incorrect password")
+var ErrInvalidPass = errors.New("invalid password")
+var ErrInvalidEmail = errors.New("invalid Email")

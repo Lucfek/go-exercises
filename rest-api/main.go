@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -81,10 +80,10 @@ func main() {
 
 	}()
 
-	fmt.Printf("Server is running on address: %s \n", ipAddr)
+	log.Printf("Server is running on address: %s \n", ipAddr)
 	err = httpSrv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
-		errLog.Println(err)
+		log.Println(err)
 	}
 
 	<-done

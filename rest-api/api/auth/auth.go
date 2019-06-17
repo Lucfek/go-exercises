@@ -14,7 +14,7 @@ import (
 func JwtVerify(next func(w http.ResponseWriter, r *http.Request, p httprouter.Params)) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
-		var header = r.Header.Get("x-access-token") //Grab the token from the header
+		var header = r.Header.Get("authorization") //Grab the token from the header
 
 		header = strings.TrimSpace(header)
 

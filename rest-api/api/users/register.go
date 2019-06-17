@@ -3,6 +3,7 @@ package users
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 
@@ -24,7 +25,7 @@ func (h Handler) Register(w http.ResponseWriter, r *http.Request, _ httprouter.P
 		return
 	}
 
-	if data.Email == "" || data.Password == "" {
+	if len(strings.TrimSpace(data.Email)) == 0 || len(strings.TrimSpace(data.Password)) == 0 {
 		res := response.Resp{
 			Status: "error",
 			Data:   "Empty values",
