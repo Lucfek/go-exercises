@@ -53,6 +53,8 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		return
 	}
 
+	w.Header().Set("Authorization", "Bearer "+token)
+
 	res := response.Resp{
 		Status: "succes",
 		Data:   token,

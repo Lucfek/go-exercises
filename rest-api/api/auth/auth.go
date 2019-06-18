@@ -14,11 +14,21 @@ import (
 func JwtVerify(next func(w http.ResponseWriter, r *http.Request, p httprouter.Params)) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
-		var header = r.Header.Get("authorization") //Grab the token from the header
+		header := r.Header.Get("Authorization") //Grab the token from the header
+		AuthArr := strings.Split(header, " ")
+		var token string
+		if len(AuthArr) == 2 {
+			token = AuthArr[1]
+		} else {
+			res := response.Resp{
+				Status: "error",
+				Data:   "Invalid token",
+			}
+			response.Writer(w, res)
+			return
+		}
 
-		header = strings.TrimSpace(header)
-
-		if header == "" {
+		if token == "" {
 			res := response.Resp{
 				Status: "error",
 				Data:   "Missing token",
@@ -28,7 +38,7 @@ func JwtVerify(next func(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 		}
 		tk := &model.Token{}
 
-		_, err := jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
+		_, err := jwt.ParseWithClaims(token, tk, func(token *jwt.Token) (interface{}, error) {
 			return []byte("secret"), nil
 		})
 
